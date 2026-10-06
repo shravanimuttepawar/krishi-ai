@@ -3,10 +3,16 @@ import numpy as np
 from PIL import Image
 import tensorflow as tf
 from flask import Flask, request, jsonify
-from flask_cors import CORS  # CORS permission sathi
 
 app = Flask(__name__)
-CORS(app)  # Sagle domains aani requests allow karnyasathi
+
+# Native Flask CORS Fix (Konthihi extra library nako!)
+@app.after_request
+def after_request(response):
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+    return response
 
 # 1. Model Load Setup
 MODEL_PATH = 'model.h5'
@@ -22,9 +28,12 @@ except Exception as e:
 def home():
     return jsonify({"status": "Krishi AI Backend is Live and Running!"})
 
-@app.route('/predict', methods=['POST'])
+@app.route('/predict', methods=['POST', 'OPTIONS'])
 def predict():
-    # Frontend kadun 'file' parameter taspana
+    if request.method == 'OPTIONS':
+        return jsonify({'status': 'OK'}), 200
+
+    # Frontend kadun 'file' parameter तपासणे
     if 'file' not in request.files:
         return jsonify({'error': 'No file provided in request'}), 400
     
@@ -36,13 +45,13 @@ def predict():
         return jsonify({'error': 'Model file not loaded on server'}), 500
 
     try:
-        # Image process kara
+        # Image process
         img = Image.open(file.stream).convert('RGB')
-        img = img.resize((224, 224))  # Model input size nusar (224x224 kiwa 256x256)
+        img = img.resize((224, 224))
         img_array = np.array(img) / 255.0
         img_array = np.expand_dims(img_array, axis=0)
 
-        # Prediction kara
+        # Prediction
         predictions = model.predict(img_array)
         predicted_class_index = int(np.argmax(predictions[0]))
         confidence = float(np.max(predictions[0]))
