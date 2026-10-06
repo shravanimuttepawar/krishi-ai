@@ -34,9 +34,8 @@ const DiseaseDetection = () => {
     setError("");
 
     try {
-      // Apne backend API ka URL yahan dalein (jaise Flask ka http://localhost:5000/predict)
-      const response = await axios.post("http://localhost:5000/predict", formData, {
-        headers: {
+      // Apne backend API ka URL yahan dalein (https://krishi-ai-ruw7.onrender.com/predict)
+      const response = await axios.post("https://krishi-ai-ruw7.onrender.com/predict", formData, {
           "Content-Type": "multipart/form-data",
         },
       });
