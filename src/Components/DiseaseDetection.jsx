@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import axios from "axios";
+import React, { useState } from 'react';
+import axios from 'axios';
 
 const DiseaseDetection = () => {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -8,7 +8,6 @@ const DiseaseDetection = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Image select karne par yeh function chalega
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -19,23 +18,25 @@ const DiseaseDetection = () => {
     }
   };
 
-  // Backend par image bhej kar predict karne ke liye
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleDetectDisease = async (e) => {
+    if (e) e.preventDefault();
+    
     if (!selectedFile) {
       setError("Pehle kripya ek image select karein!");
       return;
     }
 
     const formData = new FormData();
-    formData.append("image", selectedFile);
+    // Backend la 'file' nav paahije
+    formData.append("file", selectedFile);
 
     setLoading(true);
     setError("");
 
     try {
-      // Apne backend API ka URL yahan dalein (https://krishi-ai-ruw7.onrender.com/predict)
+      // Live Render Backend Endpoint
       const response = await axios.post("https://krishi-ai-ruw7.onrender.com/predict", formData, {
+        headers: {
           "Content-Type": "multipart/form-data",
         },
       });
@@ -54,53 +55,39 @@ const DiseaseDetection = () => {
       <h2>🌱 Krishi AI - Plant Disease Detection</h2>
       <p>Apni fasal ki patti ki tasveer upload karein taaki rog ki pehchaan ki ja sake.</p>
 
-      <form onSubmit={handleSubmit} style={{ marginTop: "20px" }}>
-        <input 
-          type="file" 
-          accept="image/*" 
-          onChange={handleImageChange} 
-          style={{ marginBottom: "15px", display: "block" }}
-        />
+      <input type="file" accept="image/*" onChange={handleImageChange} style={{ marginBottom: "15px" }} />
 
-        {/* Image Preview */}
-        {preview && (
-          <div style={{ marginBottom: "15px" }}>
-            <img 
-              src={preview} 
-              alt="Crop Preview" 
-              style={{ width: "100%", maxHeight: "300px", objectFit: "contain", borderRadius: "8px" }} 
-            />
-          </div>
-        )}
+      {preview && (
+        <div style={{ marginBottom: "15px" }}>
+          <img src={preview} alt="Selected Leaf" style={{ maxWidth: "100%", maxHeight: "300px", borderRadius: "8px" }} />
+        </div>
+      )}
 
+      <div>
         <button 
-          type="submit" 
+          onClick={handleDetectDisease} 
           disabled={loading}
-          style={{ 
-            padding: "10px 20px", 
-            backgroundColor: "#28a745", 
-            color: "white", 
-            border: "none", 
-            borderRadius: "5px", 
-            cursor: "pointer" 
+          style={{
+            backgroundColor: "#2e7d32",
+            color: "#fff",
+            padding: "10px 20px",
+            border: "none",
+            borderRadius: "5px",
+            cursor: "pointer",
+            fontWeight: "bold"
           }}
         >
-          {loading ? "Analyzing..." : "Detect Disease"}
+          {loading ? "Detecting..." : "Detect Disease"}
         </button>
-      </form>
+      </div>
 
-      {/* Error Message */}
-      {error && <p style={{ color: "red", marginTop: "15px" }}>{error}</p>}
+      {error && <p style={{ color: "red", marginTop: "10px" }}>{error}</p>}
 
-      {/* Prediction Result */}
       {prediction && (
-        <div style={{ marginTop: "25px", padding: "15px", backgroundColor: "#f8f9fa", borderRadius: "8px", border: "1px solid #ddd" }}>
-          <h3>🔍 Detection Results:</h3>
-          <p><strong>Disease Name:</strong> {prediction.disease || prediction.class || "N/A"}</p>
-          <p><strong>Confidence:</strong> {prediction.confidence ? `${(prediction.confidence * 100).toFixed(2)}%` : "N/A"}</p>
-          {prediction.remedy && (
-            <p><strong>Recommended Solution:</strong> {prediction.remedy}</p>
-          )}
+        <div style={{ marginTop: "20px", padding: "15px", backgroundColor: "#e8f5e9", borderRadius: "8px" }}>
+          <h3>Prediction Result:</h3>
+          <p><strong>Result:</strong> {prediction.class || prediction.disease || prediction.prediction || JSON.stringify(prediction)}</p>
+          {prediction.confidence && <p><strong>Confidence:</strong> {(prediction.confidence * 100).toFixed(2)}%</p>}
         </div>
       )}
     </div>
