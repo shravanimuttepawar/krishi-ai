@@ -69,3 +69,25 @@ def predict():
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
+import traceback
+from fastapi import FastAPI, File, HTTPException, UploadFile
+
+# ... aapke baaki imports aur model loading ...
+
+
+@app.post("/predict_disease")  # Aapka exact route name jo bhi ho
+async def predict_disease(file: UploadFile = File(...)):
+    try:
+        # 1. Image read & preprocess ka code yahan rakhein
+        # 2. Model prediction ka code yahan rakhein
+        # 3. Return JSON result
+
+        return {"disease": result, "confidence": confidence}
+
+    except Exception as e:
+        # Render logs me poora error print hoga
+        print("Detailed Error Traceback:")
+        traceback.print_exc()
+
+        # Frontend browser console me exact error message dikhega
+        raise HTTPException(status_code=500, detail=str(e))
